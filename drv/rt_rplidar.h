@@ -9,9 +9,9 @@ extern "C" {
 #endif
 
 /* rplidar control command */
-#define RPLIDAR_CMD_GET_TYPE       (128 + 0)    /* get a rplidar type information */
-#define RPLIDAR_CMD_ENABLE         (128 + 1)    /* enable rplidar */
-#define RPLIDAR_CMD_DISABLE        (128 + 2)    /* disable rplidar */
+// #define RPLIDAR_CMD_GET_TYPE       (128 + 0)    /* get a rplidar type information */
+// #define RPLIDAR_CMD_STOP           (128 + 1)    /* stop rplidar */
+// #define RPLIDAR_CMD_RST            (128 + 2)    /* reset rplidar */
 
 /* rplidar type */
 enum rt_rplidar_type

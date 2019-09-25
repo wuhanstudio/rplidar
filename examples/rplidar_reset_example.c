@@ -3,7 +3,7 @@
 
 #define RPLIDAR_DEVICE_NAME    "rplidar"    /* 设备名称 */
 
-static int rplidar_health_example(int argc, char *argv[])
+static int rplidar_reset_example(int argc, char *argv[])
 {
     rt_err_t ret;
 
@@ -23,16 +23,11 @@ static int rplidar_health_example(int argc, char *argv[])
         return -1;
     }
 
-    // Read health info
-    rplidar_response_device_health_t* health = (rplidar_response_device_health_t*) rt_malloc(sizeof(rplidar_response_device_health_t));
-    if(health == RT_NULL)
-    {
-        rt_kprintf("Failed to malloc memory for health data\n");
-    }
-    ret = rp_lidar_get_health(lidar, health);
+    // Stop lidar
+    ret = rp_lidar_reset(lidar);
     if(ret == RT_EOK)
     {
-        rt_kprintf("Health Status: %s\n", health->status == 0? "OK" : "Error");
+        rt_kprintf("Lidar reset\n");
     }
     else
     {
@@ -41,4 +36,4 @@ static int rplidar_health_example(int argc, char *argv[])
 
     return RT_EOK;
 }
-MSH_CMD_EXPORT(rplidar_health_example, rplidar get health info example);
+MSH_CMD_EXPORT(rplidar_reset_example, rplidar reset example);

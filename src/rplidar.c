@@ -107,19 +107,29 @@ static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_
 
 rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t* health)
 {
-    u_result res;
-    char health_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_GET_DEVICE_HEALTH};
+    rt_err_t res;
 
+    // Write get health command
+    char health_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_GET_DEVICE_HEALTH};
     rt_device_write(lidar, 0, (void*)health_cmd , (sizeof(health_cmd)));
 
+    // Maloc meory
     rplidar_ans_header_t* header = (rplidar_ans_header_t*) rt_malloc(sizeof(rplidar_ans_header_t));
-    res = rp_lidar_wait_resp_header(lidar, header, 1000);
+    if(header == RT_NULL)
+    {
+        LOG_E("Out of memory");
+        return -RT_ERROR;
+    }
 
+    // Receive header
+    res = rp_lidar_wait_resp_header(lidar, header, 1000);
     if(res != RESULT_OK)
     {
         LOG_E("Read Timout");
         return RESULT_OPERATION_TIMEOUT;
     }
+
+    // Receive data
     res = rp_lidar_recev_data(lidar, (_u8*) health, sizeof(rplidar_response_device_health_t), 1000);
     if(res != RESULT_OK)
     {
@@ -127,4 +137,32 @@ rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t
     }
 
     return RT_EOK;
+}
+
+rt_err_t rp_lidar_stop(rt_device_t lidar)
+{
+    rt_err_t res;
+
+    // Write stop scanning command
+    char stop_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_STOP};
+    if( rt_device_write(lidar, 0, (void*)stop_cmd , sizeof(stop_cmd)) == sizeof(stop_cmd) )
+    {
+        res = RT_EOK;
+    }
+
+    return res;
+}
+
+rt_err_t rp_lidar_reset(rt_device_t lidar)
+{
+    rt_err_t res;
+
+    // Write soft reset command
+    char reset_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_RESET};
+    if( rt_device_write(lidar, 0, (void*)reset_cmd , sizeof(reset_cmd)) == sizeof(reset_cmd) )
+    {
+        res = RT_EOK;
+    }
+
+    return res;
 }
