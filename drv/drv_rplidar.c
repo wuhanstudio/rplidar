@@ -5,8 +5,8 @@
 #define LOG_TAG             "drv.rplidar"
 #include <drv_log.h>
 
-#ifndef RPLIDAR_SERIAL_DEVICE
-#define RPLIDAR_SERIAL_DEVICE     "uart3"
+#ifndef RPLIDAR_UART_NAME
+#define RPLIDAR_UART_NAME     "uart3"
 #endif
 
 /* 用于接收消息的信号量 */
@@ -120,10 +120,10 @@ int hw_rplidar_init(void)
 	rplidar_obj.rplidar.type = UNKNOWN_RPLIDAR_TYPE;
 	rplidar_obj.rplidar.ops = &_ops;
 
-	serial = rt_device_find(RPLIDAR_SERIAL_DEVICE);
+	serial = rt_device_find(RPLIDAR_UART_NAME);
     if (!serial)
     {
-        rt_kprintf("find %s failed!\n", RPLIDAR_SERIAL_DEVICE);
+        rt_kprintf("find %s failed!\n", RPLIDAR_UART_NAME);
         return -RT_ERROR;
     }
 
