@@ -36,7 +36,7 @@ static u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, 
     _u32 waitTime;
 
     LOG_I("%d bytes to receive", len);
-    while ((waitTime=rt_tick_get() - startTs) <= rt_tick_from_millisecond(timeout)) 
+    while ((waitTime = rt_tick_get() - startTs) <= rt_tick_from_millisecond(timeout)) 
     {
         rt_uint8_t ch;
         rt_device_read(lidar, 0, &ch, 1);
@@ -60,7 +60,7 @@ static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_
     _u32 startTs = rt_tick_get();
     _u32 waitTime;
 
-    while ((waitTime=rt_tick_get() - startTs) <= rt_tick_from_millisecond(timeout)) 
+    while ((waitTime = rt_tick_get() - startTs) <= rt_tick_from_millisecond(timeout)) 
     {
         size_t remainSize = sizeof(rplidar_ans_header_t) - recvPos;
         LOG_I("%d bytes to receive", remainSize);
@@ -200,3 +200,18 @@ rt_err_t rp_lidar_reset(rt_device_t lidar)
 
     return res;
 }
+
+rt_err_t rp_lidar_scan(rt_device_t lidar)
+{
+    rt_err_t res;
+
+    // Write soft reset command
+    char scan_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_SCAN};
+    if( rt_device_write(lidar, 0, (void*)scan_cmd , sizeof(scan_cmd)) == sizeof(scan_cmd) )
+    {
+        res = RT_EOK;
+    }
+
+    return res;
+}
+
