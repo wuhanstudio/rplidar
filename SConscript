@@ -20,6 +20,10 @@ if GetDepend('RPLIDAR_USING_HEALTH_EXAMPLE'):
 	src    += Glob('examples/rplidar_health_example.c')
 if GetDepend('RPLIDAR_USING_DEVICE_INFO_EXAMPLE'):
 	src    += Glob('examples/rplidar_device_info_example.c')
+if GetDepend('RPLIDAR_USING_SCAN_EXAMPLE'):
+	src    += Glob('examples/rplidar_scan_example.c')
+if GetDepend('RPLIDAR_USING_SCAN_RECV_EXAMPLE'):
+	src    += Glob('examples/rplidar_scan_and_recv_example.c')
 
 LOCAL_CCFLAGS = ''
 
