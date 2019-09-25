@@ -12,8 +12,14 @@ path   += [cwd + '/sdk']
 path   += [cwd + '/src']
 path   += [cwd + '/driver']
 
+if GetDepend('RPLIDAR_USING_STOP_EXAMPLE'):
+	src    += Glob('examples/rplidar_stop_example.c')
+if GetDepend('RPLIDAR_USING_RESET_EXAMPLE'):
+	src    += Glob('examples/rplidar_reset_example.c')
 if GetDepend('RPLIDAR_USING_HEALTH_EXAMPLE'):
 	src    += Glob('examples/rplidar_health_example.c')
+if GetDepend('RPLIDAR_USING_DEVICE_INFO_EXAMPLE'):
+	src    += Glob('examples/rplidar_device_info_example.c')
 
 LOCAL_CCFLAGS = ''
 
