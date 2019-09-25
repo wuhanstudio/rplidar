@@ -139,6 +139,40 @@ rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t
     return RT_EOK;
 }
 
+rt_err_t rp_lidar_device_info(rt_device_t lidar, rplidar_response_device_info_t* info)
+{
+    rt_err_t res;
+
+    // Write get info command
+    char info_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_GET_DEVICE_INFO};
+    rt_device_write(lidar, 0, (void*)info_cmd , (sizeof(info_cmd)));
+
+    // Maloc meory
+    rplidar_ans_header_t* header = (rplidar_ans_header_t*) rt_malloc(sizeof(rplidar_ans_header_t));
+    if(header == RT_NULL)
+    {
+        LOG_E("Out of memory");
+        return -RT_ERROR;
+    }
+
+    // Receive header
+    res = rp_lidar_wait_resp_header(lidar, header, 1000);
+    if(res != RESULT_OK)
+    {
+        LOG_E("Read Timout");
+        return RESULT_OPERATION_TIMEOUT;
+    }
+
+    // Receive data
+    res = rp_lidar_recev_data(lidar, (_u8*) info, sizeof(rplidar_response_device_info_t), 1000);
+    if(res != RESULT_OK)
+    {
+        return RESULT_OPERATION_TIMEOUT;
+    }
+
+    return RT_EOK;
+}
+
 rt_err_t rp_lidar_stop(rt_device_t lidar)
 {
     rt_err_t res;

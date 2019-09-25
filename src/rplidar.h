@@ -14,5 +14,6 @@ rt_err_t rp_lidar_stop(rt_device_t lidar);
 rt_err_t rp_lidar_reset(rt_device_t lidar);
 
 rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t* health);
+rt_err_t rp_lidar_device_info(rt_device_t lidar, rplidar_response_device_info_t* info);
 
 #endif // __RPLIDAR_H__
