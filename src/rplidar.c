@@ -25,9 +25,8 @@ rt_err_t rp_lidar_init(rt_device_t lidar)
         LOG_E("Initialize device failed!");
         return -RT_ERROR;
     }
-    rt_device_open(lidar, RT_NULL);
 
-    return RT_EOK;
+    return rt_device_open(lidar, RT_NULL);
 }
 
 static u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 timeout)
@@ -77,20 +76,20 @@ static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_
 
             switch (recvPos) 
             {
-            case 0:
-                if (recvBuffer[i] != RPLIDAR_ANS_SYNC_BYTE1) 
-                {
-                   continue;
-                }
-                
-                break;
-            case 1:
-                if (recvBuffer[i] != RPLIDAR_ANS_SYNC_BYTE2) 
-                {
-                    recvPos = 0;
+                case 0:
+                    if (recvBuffer[i] != RPLIDAR_ANS_SYNC_BYTE1) 
+                    {
                     continue;
-                }
-                break;
+                    }
+
+                    break;
+                case 1:
+                    if (recvBuffer[i] != RPLIDAR_ANS_SYNC_BYTE2) 
+                    {
+                        recvPos = 0;
+                        continue;
+                    }
+                    break;
             }
             recvPos++;
             if (recvPos == sizeof(rplidar_ans_header_t)) 

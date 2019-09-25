@@ -64,16 +64,25 @@ rt_err_t rplidar_init(struct rt_rplidar_device *rplidar)
 
 rt_err_t rplidar_open(struct rt_rplidar_device *rplidar)
 {
+    rt_err_t ret;
     rt_device_t serial = rplidar->parent.user_data;
+
     /* 以中断接收及轮询发送模式打开串口设备 */
-    rt_device_open(serial, RT_DEVICE_FLAG_INT_RX);
-    /* 设置接收回调函数 */
-    rt_device_set_rx_indicate(serial, rp_lidar_input);
-    return RT_EOK;
+    ret = rt_device_open(serial, RT_DEVICE_FLAG_INT_RX);
+
+    if(ret == RT_EOK)
+    {
+        /* 设置接收回调函数 */
+        rt_device_set_rx_indicate(serial, rp_lidar_input);
+    }
+
+    return ret;
 }
 
 rt_err_t rplidar_close(struct rt_rplidar_device *rplidar)
 {
+    rt_device_t serial = rplidar->parent.user_data;
+    rt_device_close(serial);
 
     return RT_EOK;
 }
@@ -109,52 +118,39 @@ rt_size_t rplidar_write(struct rt_rplidar_device *rplidar, rt_off_t pos, const v
 
 rt_err_t rplidar_control(struct rt_rplidar_device *rplidar, rt_uint32_t cmd, void *args)
 {
+    rt_err_t result = RT_EOK;
     /*
-    rt_err_t result;
-    TIM_HandleTypeDef *tim_handler = (TIM_HandleTypeDef *)rplidar->parent.user_data;
-
-    result = RT_EOK;
-
     switch (cmd)
     {
-    case rplidar_CMD_ENABLE:
-        HAL_TIM_Encoder_Start(tim_handler, TIM_CHANNEL_ALL);
-        break;
-    case rplidar_CMD_DISABLE:
-        HAL_TIM_Encoder_Stop(tim_handler, TIM_CHANNEL_ALL);
-        break;
-    case rplidar_CMD_CLEAR_COUNT:
-        __HAL_TIM_SET_COUNTER(tim_handler, 0);
-        break;
-    default:
-        result = -RT_ENOSYS;
-        break;
+        case rplidar_CMD_ENABLE:
+            break;
+        case rplidar_CMD_DISABLE:
+            break;
+        default:
+            result = -RT_ENOSYS;
+            break;
     }
-
-    return result;
     */
-    return RT_EOK;
+    return result;
 }
 
 static const struct rt_rplidar_ops _ops =
 {
-    .init = rplidar_init,
-    .open = rplidar_open,
-    .close = rplidar_close,
-    .read = rplidar_read,
-    .write = rplidar_write,
+    .init    = rplidar_init,
+    .open    = rplidar_open,
+    .close   = rplidar_close,
+    .read    = rplidar_read,
+    .write   = rplidar_write,
     .control = rplidar_control,
 };
 
 int hw_rplidar_init(void)
 {
-    int result;
-
+    int result = RT_EOK;
     rt_device_t serial;
 
-    result = RT_EOK;
     rplidar_obj.rplidar.type = UNKNOWN_RPLIDAR_TYPE;
-    rplidar_obj.rplidar.ops = &_ops;
+    rplidar_obj.rplidar.ops  = &_ops;
 
     serial = rt_device_find(RPLIDAR_UART_NAME);
     if (!serial)
