@@ -31,7 +31,7 @@ pin      Miscellaneous Device 0
 
 ```
 // 创建激光雷达设备
-rt_device_t lidar = rp_lidar_create(“uart3”)
+rt_device_t lidar = rp_lidar_create("rplidar")
 
 // 激光雷达初始化
 rp_lidar_init(lidar)
