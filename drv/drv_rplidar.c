@@ -1,9 +1,9 @@
 #include "rt_rplidar.h"
 #include "rplidar_cmd.h"
 
-//#define DRV_DEBUG
-#define LOG_TAG             "drv.rplidar"
-#include <drv_log.h>
+#define DBG_SECTION_NAME  "drv.rplidar"
+#define DBG_LEVEL         DBG_LOG
+#include <rtdbg.h>
 
 #ifndef RPLIDAR_UART_NAME
 #define RPLIDAR_UART_NAME     "uart3"
@@ -97,7 +97,7 @@ rt_size_t rplidar_read(struct rt_rplidar_device *rplidar, rt_off_t pos, void *bu
         if(rp_lidar_get_char(rplidar, &ch, 1000) == RT_EOK)
         {
             buffer_ch[pos + read_count] = ch;
-            LOG_I("Read %02X", buffer_ch[pos + read_count]);
+            // LOG_I("Read %02X", buffer_ch[pos + read_count]);
             read_count++;
         }
         else

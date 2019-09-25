@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 
-//#define DRV_DEBUG
-#define LOG_TAG             "rplidar"
-#include <drv_log.h>
+#define DBG_SECTION_NAME  "rplidar"
+#define DBG_LEVEL         DBG_LOG
+#include <rtdbg.h>
 
 rt_device_t rp_lidar_create(const char* lidar_name)
 {
@@ -47,7 +47,7 @@ u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 ti
         {
             LOG_I("Received content\n");
             return RESULT_OK;
-        }    
+        }
     }
     return RESULT_OPERATION_TIMEOUT;
 }
@@ -71,20 +71,19 @@ u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * hea
             {
                 return RESULT_OPERATION_TIMEOUT;
             };
-            recvBuffer[i] = ch;
-            LOG_I("Received %02X", recvBuffer[i]);
+            recvBuffer[recvPos] = ch;
+            LOG_I("Received %02X", recvBuffer[recvPos]);
 
             switch (recvPos) 
             {
                 case 0:
-                    if (recvBuffer[i] != RPLIDAR_ANS_SYNC_BYTE1) 
+                    if (recvBuffer[recvPos] != RPLIDAR_ANS_SYNC_BYTE1) 
                     {
                     continue;
                     }
-
                     break;
                 case 1:
-                    if (recvBuffer[i] != RPLIDAR_ANS_SYNC_BYTE2) 
+                    if (recvBuffer[recvPos] != RPLIDAR_ANS_SYNC_BYTE2) 
                     {
                         recvPos = 0;
                         continue;
@@ -97,6 +96,68 @@ u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * hea
                 LOG_I("Received header\n");
                 _u8* header_temp = (_u8*) header;
                 memcpy(header_temp, recvBuffer, sizeof(rplidar_ans_header_t));
+                return RESULT_OK;
+            }
+        }
+    }
+
+    return RESULT_OPERATION_TIMEOUT;
+}
+
+u_result rp_lidar_wait_scan_data(rt_device_t lidar, rplidar_response_measurement_node_t * node, _u32 timeout)
+{
+    int  recvPos = 0;
+    _u8  recvBuffer[sizeof(rplidar_response_measurement_node_t)];
+
+    _u32 startTs = rt_tick_get();
+    _u32 waitTime;
+
+    while ((waitTime = rt_tick_get() - startTs) <= rt_tick_from_millisecond(timeout)) 
+    {
+        size_t remainSize = sizeof(rplidar_response_measurement_node_t) - recvPos;
+        // LOG_I("%d bytes to receive", remainSize);
+        for(size_t i = 0; i < remainSize; i++)
+        {
+            rt_uint8_t ch;
+            if(rt_device_read(lidar, 0, &ch, 1) != 1)
+            {
+                return RESULT_OPERATION_TIMEOUT;
+            };
+            recvBuffer[recvPos] = ch;
+            // LOG_I("[%d] Received %02X", recvPos, recvBuffer[recvPos]);
+            switch (recvPos) 
+            {
+                case 0:
+                    {
+                        _u8 tmp = (recvBuffer[recvPos]>>1);
+                        if ( (tmp ^ recvBuffer[recvPos]) & 0x1 )
+                        {
+                            // pass;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    break;
+                case 1:
+                    if (recvBuffer[recvPos] & RPLIDAR_RESP_MEASUREMENT_CHECKBIT)
+                    {
+                        // pass
+                    }
+                    else
+                    {
+                        recvPos = 0;
+                        continue;
+                    }
+                    break;
+            }
+            recvPos++;
+            if (recvPos == sizeof(rplidar_response_measurement_node_t)) 
+            {
+                // LOG_I("Received scan data\n");
+                _u8* node_temp = (_u8*) node;
+                memcpy(node_temp, recvBuffer, sizeof(rplidar_response_measurement_node_t));
                 return RESULT_OK;
             }
         }
@@ -175,7 +236,12 @@ rt_err_t rp_lidar_get_device_info(rt_device_t lidar, rplidar_response_device_inf
 
 rt_err_t rp_lidar_get_scan_data(rt_device_t lidar, rplidar_response_measurement_node_t* node, _u32 timeout)
 {
-
+    // Receive data
+    rt_err_t res = rp_lidar_wait_scan_data(lidar, node, 1000);
+    if(res != RESULT_OK)
+    {
+        return RESULT_OPERATION_TIMEOUT;
+    }
     return RT_EOK;
 }
 
@@ -238,6 +304,11 @@ rt_err_t rp_lidar_scan(rt_device_t lidar, _u32 timeout)
         return RESULT_INVALID_DATA;
     }
 
+    _u32 header_size = (header->size_q30_subtype & RPLIDAR_ANS_HEADER_SIZE_MASK);
+    if (header_size < sizeof(rplidar_response_measurement_node_t)) {
+        return RESULT_INVALID_DATA;
+    }
+
     // Print scan response header
     // char* header_temp = (char*) header;
     // rt_kprintf("Scan response header:");
@@ -249,4 +320,3 @@ rt_err_t rp_lidar_scan(rt_device_t lidar, _u32 timeout)
 
     return res;
 }
-

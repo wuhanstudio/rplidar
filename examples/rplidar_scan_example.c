@@ -23,7 +23,7 @@ static int rplidar_scan_example(int argc, char *argv[])
         return -1;
     }
 
-    // Stop lidar
+    // Start lidar
     ret = rp_lidar_scan(lidar, 1000);
     if(ret == RT_EOK)
     {
