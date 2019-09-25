@@ -29,7 +29,7 @@ rt_err_t rp_lidar_init(rt_device_t lidar)
     return rt_device_open(lidar, RT_NULL);
 }
 
-static u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 timeout)
+u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 timeout)
 {
     int  recvPos = 0;
     _u32 startTs = rt_tick_get();
@@ -52,7 +52,7 @@ static u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, 
     return RESULT_OPERATION_TIMEOUT;
 }
 
-static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * header, _u32 timeout)
+u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * header, _u32 timeout)
 {
     int  recvPos = 0;
     _u8  recvBuffer[sizeof(rplidar_ans_header_t)];
@@ -105,7 +105,7 @@ static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_
     return RESULT_OPERATION_TIMEOUT;
 }
 
-rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t* health)
+rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t* health, _u32 timeout)
 {
     rt_err_t res;
 
@@ -113,7 +113,7 @@ rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t
     char health_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_GET_DEVICE_HEALTH};
     rt_device_write(lidar, 0, (void*)health_cmd , (sizeof(health_cmd)));
 
-    // Maloc meory
+    // Maloc memory
     rplidar_ans_header_t* header = (rplidar_ans_header_t*) rt_malloc(sizeof(rplidar_ans_header_t));
     if(header == RT_NULL)
     {
@@ -122,7 +122,7 @@ rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t
     }
 
     // Receive header
-    res = rp_lidar_wait_resp_header(lidar, header, 1000);
+    res = rp_lidar_wait_resp_header(lidar, header, timeout);
     if(res != RESULT_OK)
     {
         LOG_E("Read Timout");
@@ -139,7 +139,7 @@ rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t
     return RT_EOK;
 }
 
-rt_err_t rp_lidar_device_info(rt_device_t lidar, rplidar_response_device_info_t* info)
+rt_err_t rp_lidar_get_device_info(rt_device_t lidar, rplidar_response_device_info_t* info, _u32 timeout)
 {
     rt_err_t res;
 
@@ -147,7 +147,7 @@ rt_err_t rp_lidar_device_info(rt_device_t lidar, rplidar_response_device_info_t*
     char info_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_GET_DEVICE_INFO};
     rt_device_write(lidar, 0, (void*)info_cmd , (sizeof(info_cmd)));
 
-    // Maloc meory
+    // Maloc memory
     rplidar_ans_header_t* header = (rplidar_ans_header_t*) rt_malloc(sizeof(rplidar_ans_header_t));
     if(header == RT_NULL)
     {
@@ -156,7 +156,7 @@ rt_err_t rp_lidar_device_info(rt_device_t lidar, rplidar_response_device_info_t*
     }
 
     // Receive header
-    res = rp_lidar_wait_resp_header(lidar, header, 1000);
+    res = rp_lidar_wait_resp_header(lidar, header, timeout);
     if(res != RESULT_OK)
     {
         LOG_E("Read Timout");
@@ -169,6 +169,12 @@ rt_err_t rp_lidar_device_info(rt_device_t lidar, rplidar_response_device_info_t*
     {
         return RESULT_OPERATION_TIMEOUT;
     }
+
+    return RT_EOK;
+}
+
+rt_err_t rp_lidar_get_scan_data(rt_device_t lidar, rplidar_response_measurement_node_t* node, _u32 timeout)
+{
 
     return RT_EOK;
 }
@@ -201,16 +207,45 @@ rt_err_t rp_lidar_reset(rt_device_t lidar)
     return res;
 }
 
-rt_err_t rp_lidar_scan(rt_device_t lidar)
+rt_err_t rp_lidar_scan(rt_device_t lidar, _u32 timeout)
 {
     rt_err_t res;
 
-    // Write soft reset command
+    // Write scan command
     char scan_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_SCAN};
     if( rt_device_write(lidar, 0, (void*)scan_cmd , sizeof(scan_cmd)) == sizeof(scan_cmd) )
     {
         res = RT_EOK;
     }
+
+    // Maloc memory
+    rplidar_ans_header_t* header = (rplidar_ans_header_t*) rt_malloc(sizeof(rplidar_ans_header_t));
+    if(header == RT_NULL)
+    {
+        LOG_E("Out of memory");
+        return -RT_ERROR;
+    }
+
+    // Receive header
+    res = rp_lidar_wait_resp_header(lidar, header, timeout);
+    if(res != RESULT_OK)
+    {
+        LOG_E("Read Timout");
+        return RESULT_OPERATION_TIMEOUT;
+    }
+    // verify whether we got a correct header
+    if (header->type != RPLIDAR_ANS_TYPE_MEASUREMENT) {
+        return RESULT_INVALID_DATA;
+    }
+
+    // Print scan response header
+    // char* header_temp = (char*) header;
+    // rt_kprintf("Scan response header:");
+    // for(int i = 0; i < sizeof(rplidar_ans_header_t); i++)
+    // {
+    //     rt_kprintf("%02X ", header_temp[i]);
+    // }
+    // rt_kprintf("\n");
 
     return res;
 }

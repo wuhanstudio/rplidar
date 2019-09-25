@@ -29,7 +29,7 @@ static int rplidar_device_info_example(int argc, char *argv[])
     {
         rt_kprintf("Failed to malloc memory for device info data\n");
     }
-    ret = rp_lidar_device_info(lidar, info);
+    ret = rp_lidar_get_device_info(lidar, info, 1000);
     if(ret == RT_EOK)
     {
         rt_kprintf("Model           : A%dM%d\n", (info->model >> 4) & 0x0F, info->model & 0x0F);

@@ -29,7 +29,7 @@ static int rplidar_health_example(int argc, char *argv[])
     {
         rt_kprintf("Failed to malloc memory for health data\n");
     }
-    ret = rp_lidar_get_health(lidar, health);
+    ret = rp_lidar_get_health(lidar, health, 1000);
     if(ret == RT_EOK)
     {
         rt_kprintf("Health Status: %s\n", health->status == 0? "OK" : "Error");

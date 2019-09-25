@@ -24,10 +24,10 @@ static int rplidar_scan_example(int argc, char *argv[])
     }
 
     // Stop lidar
-    ret = rp_lidar_scan(lidar);
+    ret = rp_lidar_scan(lidar, 1000);
     if(ret == RT_EOK)
     {
-        rt_kprintf("Lidar start scanning\n");
+        rt_kprintf("Lidar started scanning\n");
     }
     else
     {
