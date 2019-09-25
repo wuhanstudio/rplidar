@@ -27,6 +27,8 @@ struct rt_rplidar_ops
     rt_err_t (*init)(struct rt_rplidar_device *rplidar);
     rt_err_t (*open)(struct rt_rplidar_device *rplidar);
     rt_err_t (*close)(struct rt_rplidar_device *rplidar);
+    rt_size_t (*read)(struct rt_rplidar_device *rplidar, rt_off_t pos, void *buffer, rt_size_t size);
+    rt_size_t (*write)(struct rt_rplidar_device *rplidar, rt_off_t pos, const void *buffer, rt_size_t size);
     rt_err_t (*control)(struct rt_rplidar_device *rplidar, rt_uint32_t cmd, void *args);
 };
 

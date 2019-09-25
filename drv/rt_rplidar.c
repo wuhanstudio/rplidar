@@ -4,9 +4,8 @@
 
 static rt_err_t rt_lidar_init(struct rt_device *dev)
 {
-    struct rt_rplidar_device *lidar;
+    struct rt_rplidar_device *lidar = (struct rt_rplidar_device *)dev;
 
-    lidar = (struct rt_rplidar_device *)dev;
     if (lidar->ops->init)
     {
         return lidar->ops->init(lidar);
@@ -19,9 +18,8 @@ static rt_err_t rt_lidar_init(struct rt_device *dev)
 
 static rt_err_t rt_lidar_open(struct rt_device *dev, rt_uint16_t oflag)
 {
-    struct rt_rplidar_device *lidar;
+    struct rt_rplidar_device *lidar = (struct rt_rplidar_device *)dev;
 
-    lidar = (struct rt_rplidar_device *)dev;
     if (lidar->ops->open)
     {
         return lidar->ops->open(lidar);
@@ -34,9 +32,7 @@ static rt_err_t rt_lidar_open(struct rt_device *dev, rt_uint16_t oflag)
 
 static rt_err_t rt_lidar_close(struct rt_device *dev)
 {
-    struct rt_rplidar_device *lidar;
-
-    lidar = (struct rt_rplidar_device *)dev;
+    struct rt_rplidar_device *lidar = (struct rt_rplidar_device *)dev;
 
     if (lidar->ops->close)
     {
@@ -50,34 +46,34 @@ static rt_err_t rt_lidar_close(struct rt_device *dev)
 
 static rt_size_t rt_lidar_read(struct rt_device *dev, rt_off_t pos, void *buffer, rt_size_t size)
 {
-	/*
-    struct rt_rplidar_device *lidar;
+    struct rt_rplidar_device *lidar = (struct rt_rplidar_device *)dev;
 
-    lidar = (struct rt_rplidar_device *)dev;
-
-    if (lidar->ops->get_count)
+    if (lidar->ops->read)
     {
-        *(rt_int32_t *)buffer = lidar->ops->get_count(lidar);
+        return lidar->ops->read(lidar, pos, buffer, size);
     }
-	*/
-    return 1;
+    return 0;
+}
+
+static rt_size_t rt_lidar_write(rt_device_t dev, rt_off_t pos, const void *buffer, rt_size_t size)
+{
+    struct rt_rplidar_device *lidar = (struct rt_rplidar_device *)dev;
+
+    if (lidar->ops->write)
+    {
+        return lidar->ops->write(lidar, pos, buffer, size);
+    }
+    return 0;
 }
 
 static rt_err_t rt_lidar_control(struct rt_device *dev, int cmd, void *args)
 {
+    struct rt_rplidar_device *lidar = (struct rt_rplidar_device *)dev;
 
-    rt_err_t result;
-
-    struct rt_rplidar_device *lidar;
-
-    result = RT_EOK;
-	
-    lidar = (struct rt_rplidar_device *)dev;
-
+    rt_err_t result = RT_EOK;
     result = lidar->ops->control(lidar, cmd, args);
 
     return result;
-
 }
 
 #ifdef RT_USING_DEVICE_OPS
@@ -87,7 +83,7 @@ const static struct rt_device_ops lidar_ops =
     rt_lidar_open,
     rt_lidar_close,
     rt_lidar_read,
-    RT_NULL,
+    rt_lidar_write,
     rt_lidar_control
 };
 #endif
@@ -112,10 +108,10 @@ rt_err_t rt_device_rplidar_register(struct rt_rplidar_device *lidar, const char 
     device->open        = rt_lidar_open;
     device->close       = rt_lidar_close;
     device->read        = rt_lidar_read;
-    device->write       = RT_NULL;
+    device->write       = rt_lidar_write;
     device->control     = rt_lidar_control;
 #endif
     device->user_data   = user_data;
 
-    return rt_device_register(device, name, RT_DEVICE_FLAG_RDONLY | RT_DEVICE_FLAG_STANDALONE);
+    return rt_device_register(device, name, RT_DEVICE_FLAG_RDWR);
 }

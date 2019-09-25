@@ -34,6 +34,10 @@ static int rplidar_health_example(int argc, char *argv[])
     {
         rt_kprintf("Health Status: %s\n", health->status == 0? "OK" : "Error");
     }
+    else
+    {
+        rt_kprintf("Failed to read from lidar device\n");
+    }
 
     return RT_EOK;
 }

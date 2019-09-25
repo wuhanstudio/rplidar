@@ -22,9 +22,11 @@ rt_err_t rp_lidar_init(rt_device_t lidar)
     rt_err_t ret = rt_device_init(lidar);
     if (ret != RT_EOK)
     {
-        LOG_E("Initialize device failed!\n");
+        LOG_E("Initialize device failed!");
         return -RT_ERROR;
     }
+    rt_device_open(lidar, RT_NULL);
+
     return RT_EOK;
 }
 
@@ -37,7 +39,9 @@ static u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, 
     LOG_I("%d bytes to receive", len);
     while ((waitTime=rt_tick_get() - startTs) <= rt_tick_from_millisecond(timeout)) 
     {
-        buffer[recvPos] = rp_lidar_get_char(lidar);
+        rt_uint8_t ch;
+        rt_device_read(lidar, 0, &ch, 1);
+        buffer[recvPos] = ch;
         LOG_I("Received %02X", buffer[recvPos]);
         recvPos++;
         if (recvPos == len)
@@ -63,8 +67,14 @@ static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_
         LOG_I("%d bytes to receive", remainSize);
         for(size_t i = 0; i < remainSize; i++)
         {
-            recvBuffer[i] = rp_lidar_get_char(lidar);
+            rt_uint8_t ch;
+            if(rt_device_read(lidar, 0, &ch, 1) != 1)
+            {
+                return RESULT_OPERATION_TIMEOUT;
+            };
+            recvBuffer[i] = ch;
             LOG_I("Received %02X", recvBuffer[i]);
+
             switch (recvPos) 
             {
             case 0:
@@ -99,15 +109,16 @@ static u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_
 rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t* health)
 {
     u_result res;
-    rt_device_t serial = (rt_device_t)lidar->user_data;
     char health_cmd[] = {RPLIDAR_CMD_SYNC_BYTE, RPLIDAR_CMD_GET_DEVICE_HEALTH};
-    rt_device_write(serial, 0, health_cmd, (sizeof(health_cmd)));
-    
+
+    rt_device_write(lidar, 0, (void*)health_cmd , (sizeof(health_cmd)));
+
     rplidar_ans_header_t* header = (rplidar_ans_header_t*) rt_malloc(sizeof(rplidar_ans_header_t));
     res = rp_lidar_wait_resp_header(lidar, header, 1000);
 
     if(res != RESULT_OK)
     {
+        LOG_E("Read Timout");
         return RESULT_OPERATION_TIMEOUT;
     }
     res = rp_lidar_recev_data(lidar, (_u8*) health, sizeof(rplidar_response_device_health_t), 1000);
