@@ -9,17 +9,17 @@
 #define RPLIDAR_UART_NAME     "uart3"
 #endif
 
-/* 用于接收消息的信号量 */
+/* 鐢ㄤ簬鎺ユ敹娑堟伅鐨勪俊鍙烽噺 */
 struct rt_semaphore rx_sem;
 
-/* 接收数据回调函数 */
+/* 鎺ユ敹鏁版嵁鍥炶皟鍑芥暟 */
 static rt_err_t rp_lidar_input(rt_device_t dev, rt_size_t size)
 {
-    /* 串口接收到数据后产生中断，调用此回调函数，然后发送接收信号量 */
-	if(size>0)
-	{
+    /* 涓插彛鎺ユ敹鍒版暟鎹悗浜х敓涓柇锛岃皟鐢ㄦ鍥炶皟鍑芥暟锛岀劧鍚庡彂閫佹帴鏀朵俊鍙烽噺 */
+    if(size>0)
+    {
         rt_sem_release(&rx_sem);
-	}
+    }
 
     return RT_EOK;
 }
@@ -31,7 +31,7 @@ char rp_lidar_get_char(rt_device_t rplidar)
     while (rt_device_read(serial, 0, &ch, 1) == 0)
     {
         rt_sem_control(&rx_sem, RT_IPC_CMD_RESET, RT_NULL);
-		rt_sem_take(&rx_sem, RT_WAITING_FOREVER);
+        rt_sem_take(&rx_sem, RT_WAITING_FOREVER);
     }
     return ch;
 }
@@ -45,17 +45,17 @@ struct rplidar_device
 
 static struct rplidar_device rplidar_obj =
 {
-       .name            = "rplidar"
+    .name = "rplidar"
 };
 
 rt_err_t rplidar_init(struct rt_rplidar_device *rplidar)
 {
-    /* 初始化信号量 */
+    /* 鍒濆鍖栦俊鍙烽噺 */
     rt_sem_init(&rx_sem, "rx_sem", 0, RT_IPC_FLAG_FIFO);
-	rt_device_t serial = rplidar->parent.user_data;
-    /* 以中断接收及轮询发送模式打开串口设备 */
+    rt_device_t serial = rplidar->parent.user_data;
+    /* 浠ヤ腑鏂帴鏀跺強杞鍙戦�佹ā寮忔墦寮�涓插彛璁惧 */
     rt_device_open(serial, RT_DEVICE_FLAG_INT_RX);
-    /* 设置接收回调函数 */
+    /* 璁剧疆鎺ユ敹鍥炶皟鍑芥暟 */
     rt_device_set_rx_indicate(serial, rp_lidar_input);
 
     return RT_EOK;
@@ -98,15 +98,15 @@ rt_err_t rplidar_control(struct rt_rplidar_device *rplidar, rt_uint32_t cmd, voi
     }
 
     return result;
-	*/
-	return RT_EOK;
+    */
+    return RT_EOK;
 }
 
 static const struct rt_rplidar_ops _ops =
 {
     .init = rplidar_init,
     .open = rplidar_open,
-	.close = rplidar_close,
+    .close = rplidar_close,
     .control = rplidar_control,
 };
 
@@ -114,24 +114,24 @@ int hw_rplidar_init(void)
 {
     int result;
 
-	rt_device_t serial;
+    rt_device_t serial;
 
     result = RT_EOK;
-	rplidar_obj.rplidar.type = UNKNOWN_RPLIDAR_TYPE;
-	rplidar_obj.rplidar.ops = &_ops;
+    rplidar_obj.rplidar.type = UNKNOWN_RPLIDAR_TYPE;
+    rplidar_obj.rplidar.ops = &_ops;
 
-	serial = rt_device_find(RPLIDAR_UART_NAME);
+    serial = rt_device_find(RPLIDAR_UART_NAME);
     if (!serial)
     {
         rt_kprintf("find %s failed!\n", RPLIDAR_UART_NAME);
         return -RT_ERROR;
     }
 
-	if (rt_device_rplidar_register(&rplidar_obj.rplidar, rplidar_obj.name, serial) != RT_EOK)
-	{
-		LOG_E("%s register failed", rplidar_obj.name);
-		result = -RT_ERROR;
-	}
+    if (rt_device_rplidar_register(&rplidar_obj.rplidar, rplidar_obj.name, serial) != RT_EOK)
+    {
+        LOG_E("%s register failed", rplidar_obj.name);
+        result = -RT_ERROR;
+    }
 
     return result;
 }
