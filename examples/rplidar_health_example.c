@@ -3,7 +3,7 @@
 
 #define RPLIDAR_DEVICE_NAME    "rplidar"    /* 设备名称 */
 
-static int rplidar_example(int argc, char *argv[])
+static int rplidar_health_example(int argc, char *argv[])
 {
 	rt_err_t ret;
 
@@ -38,4 +38,4 @@ static int rplidar_example(int argc, char *argv[])
 	return RT_EOK;
 }
 /* 导出到 msh 命令列表中 */
-MSH_CMD_EXPORT(rplidar_example, rplidar example);
+MSH_CMD_EXPORT(rplidar_health_example, rplidar get health info example);

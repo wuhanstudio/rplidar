@@ -6,13 +6,14 @@ cwd     = GetCurrentDir()
 src     = Glob('sdk/*.c')
 src    += Glob('drv/*.c')
 src    += Glob('src/*.c')
-src    += Glob('examples/*.c')
 
 path    = [cwd]
 path   += [cwd + '/sdk']
 path   += [cwd + '/src']
 path   += [cwd + '/driver']
-path   += [cwd + 'examples/driver']
+
+if GetDepend('RPLIDAR_USING_HEALTH_EXAMPLE'):
+	src    += Glob('examples/rplidar_health_example.c')
 
 LOCAL_CCFLAGS = ''
 
