@@ -32,7 +32,7 @@ static int rplidar_example(int argc, char *argv[])
 	ret = rp_lidar_get_health(lidar, health);
 	if(ret == RT_EOK)
 	{
-        rt_kprintf("Health Status: %d\n", health->status);
+        rt_kprintf("Health Status: %s\n", health->status == 0? "OK" : "Error");
 	}
 
 	return RT_EOK;
