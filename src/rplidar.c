@@ -8,6 +8,8 @@
 
 rt_device_t rp_lidar_create(const char* lidar_name)
 {
+    RT_ASSERT(lidar_name != "");
+
     rt_device_t lidar = rt_device_find(lidar_name);
     if (!lidar)
     {
@@ -19,6 +21,8 @@ rt_device_t rp_lidar_create(const char* lidar_name)
 
 rt_err_t rp_lidar_init(rt_device_t lidar)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     rt_err_t ret = rt_device_init(lidar);
     if (ret != RT_EOK)
     {
@@ -31,6 +35,8 @@ rt_err_t rp_lidar_init(rt_device_t lidar)
 
 u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     int  recvPos = 0;
     _u32 startTs = rt_tick_get();
     _u32 waitTime;
@@ -41,11 +47,11 @@ u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 ti
         rt_uint8_t ch;
         rt_device_read(lidar, 0, &ch, 1);
         buffer[recvPos] = ch;
-        LOG_I("Received %02X", buffer[recvPos]);
+        // LOG_I("Received %02X", buffer[recvPos]);
         recvPos++;
         if (recvPos == len)
         {
-            LOG_I("Received content\n");
+            LOG_I("Received content");
             return RESULT_OK;
         }
     }
@@ -54,6 +60,8 @@ u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 ti
 
 u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * header, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     int  recvPos = 0;
     _u8  recvBuffer[sizeof(rplidar_ans_header_t)];
 
@@ -72,7 +80,7 @@ u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * hea
                 return RESULT_OPERATION_TIMEOUT;
             };
             recvBuffer[recvPos] = ch;
-            LOG_I("Received %02X", recvBuffer[recvPos]);
+            // LOG_I("Received %02X", recvBuffer[recvPos]);
 
             switch (recvPos) 
             {
@@ -93,7 +101,7 @@ u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * hea
             recvPos++;
             if (recvPos == sizeof(rplidar_ans_header_t)) 
             {
-                LOG_I("Received header\n");
+                LOG_I("Received header");
                 _u8* header_temp = (_u8*) header;
                 memcpy(header_temp, recvBuffer, sizeof(rplidar_ans_header_t));
                 return RESULT_OK;
@@ -106,6 +114,8 @@ u_result rp_lidar_wait_resp_header(rt_device_t lidar, rplidar_ans_header_t * hea
 
 u_result rp_lidar_wait_scan_data(rt_device_t lidar, rplidar_response_measurement_node_t * node, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     int  recvPos = 0;
     _u8  recvBuffer[sizeof(rplidar_response_measurement_node_t)];
 
@@ -155,7 +165,7 @@ u_result rp_lidar_wait_scan_data(rt_device_t lidar, rplidar_response_measurement
             recvPos++;
             if (recvPos == sizeof(rplidar_response_measurement_node_t)) 
             {
-                // LOG_I("Received scan data\n");
+                // LOG_I("Received scan data");
                 _u8* node_temp = (_u8*) node;
                 memcpy(node_temp, recvBuffer, sizeof(rplidar_response_measurement_node_t));
                 return RESULT_OK;
@@ -168,6 +178,8 @@ u_result rp_lidar_wait_scan_data(rt_device_t lidar, rplidar_response_measurement
 
 rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t* health, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     rt_err_t res;
 
     // Write get health command
@@ -202,6 +214,8 @@ rt_err_t rp_lidar_get_health(rt_device_t lidar, rplidar_response_device_health_t
 
 rt_err_t rp_lidar_get_device_info(rt_device_t lidar, rplidar_response_device_info_t* info, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     rt_err_t res;
 
     // Write get info command
@@ -236,6 +250,8 @@ rt_err_t rp_lidar_get_device_info(rt_device_t lidar, rplidar_response_device_inf
 
 rt_err_t rp_lidar_get_scan_data(rt_device_t lidar, rplidar_response_measurement_node_t* node, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     // Receive data
     rt_err_t res = rp_lidar_wait_scan_data(lidar, node, 1000);
     if(res != RESULT_OK)
@@ -247,6 +263,8 @@ rt_err_t rp_lidar_get_scan_data(rt_device_t lidar, rplidar_response_measurement_
 
 rt_err_t rp_lidar_stop(rt_device_t lidar)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     rt_err_t res;
 
     // Write stop scanning command
@@ -261,6 +279,8 @@ rt_err_t rp_lidar_stop(rt_device_t lidar)
 
 rt_err_t rp_lidar_reset(rt_device_t lidar)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     rt_err_t res;
 
     // Write soft reset command
@@ -275,6 +295,8 @@ rt_err_t rp_lidar_reset(rt_device_t lidar)
 
 rt_err_t rp_lidar_scan(rt_device_t lidar, _u32 timeout)
 {
+    RT_ASSERT(lidar != RT_NULL);
+
     rt_err_t res;
 
     // Write scan command

@@ -5,8 +5,6 @@
 #include <rtdevice.h>
 #include <rplidar_cmd.h>
 
-// extern u_result rp_lidar_recev_data(rt_device_t lidar, _u8* buffer, size_t len, _u32 timeout);
-
 rt_device_t rp_lidar_create(const char* lidar_name);
 rt_err_t rp_lidar_init(rt_device_t lidar);
 
