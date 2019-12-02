@@ -51,4 +51,4 @@ rp_lidar_get_health(lidar, health);
 
 - 维护：Wu Han
 - 主页：[http://wuhanstudio.cc](http://wuhanstudio.cc/)
-- 邮箱：[wuhanstudio@hust.edu.cn](mailto:wuhanstudio@hust.edu.cn)
+- 联系：[wuhanstudio@hust.edu.cn](mailto:wuhanstudio@hust.edu.cn)
